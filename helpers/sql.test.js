@@ -14,9 +14,10 @@ const js = {
 
 describe('returns sql indentifiers and values for partial update query', function () {
     test('works', function () {
+        const keys = Object.keys(data);
         const sql = sqlForPartialUpdate(data, js);
         expect(sql).toEqual({
-            setCols: "\"name\"=$1, \"num_employees\"=$2, \"logo_url\"=$3",
+            setCols: `\"${keys[0]}\"=$1, \"${js.numEmployees}\"=$2, \"${js.logoUrl}\"=$3`,
             values: [data.name, data.numEmployees, data.logoUrl],
         });
       });
