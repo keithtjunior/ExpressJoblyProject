@@ -34,7 +34,6 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
-    debugger;
     const user = await User.register(req.body);
     const token = createToken(user);
     return res.status(201).json({ user, token });
