@@ -49,14 +49,15 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
+  static async findAll(filters=null) {
+    const query = this.#filterAll(filters);
     const companiesRes = await db.query(
           `SELECT handle,
                   name,
                   description,
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
-           FROM companies
+           FROM companies ${query ? query : ''}
            ORDER BY name`);
     return companiesRes.rows;
   }
@@ -140,6 +141,27 @@ class Company {
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
+
+    /** COMMENTS.
+   *
+   * 
+   **/
+
+  static #filterAll(filters) {
+    if (!filters) return;
+    if (filters.minEmployees >= filters.maxEmployees) 
+      throw new BadRequestError("instance.filters.maxEmployees must be greater than instance.filters.minEmployees");
+  
+    const keys = Object.keys(filters);
+    const values = Object.values(filters);
+  
+    return keys.reduce((obj, val, idx) => {
+      return obj += `${idx===0 ? '\nWHERE' : '\nAND'} ${val==='name' ? 
+      `lower(name) LIKE lower('%' || '${values[idx]}' || '%')` : 
+      `num_employees ${val==='minEmployees' ? `>=` : `<`} ${values[idx]}`}`
+    }, '');
+  }
+  
 }
 
 
