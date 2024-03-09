@@ -103,16 +103,48 @@ class User {
 
   static async findAll() {
     const result = await db.query(
-          `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           ORDER BY username`,
+        `SELECT 
+            u.username, 
+            u.first_name AS "firstName", 
+            u.last_name AS "lastName", 
+            u.email, 
+            u.is_admin AS "isAdmin", 
+            j.id AS "jobId",
+            j.title,
+            j.salary,
+            j.equity,
+            j.company_handle AS "companyHandle"
+          FROM users u 
+          LEFT JOIN applications a
+          ON a.username = u.username
+          LEFT JOIN jobs j 
+          ON j.id = a.job_id
+          ORDER BY username`
     );
 
-    return result.rows;
+    const users = result.rows.reduce((arr,user) => {
+      if (!arr.find((u) => u.username === user.username)) {
+          arr.push({
+            username: user.username,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            email: user.email,
+            is_admin: user.isAdmin,
+            jobs: user.jobId ? 
+              result.rows.map(j => j.username === user.username ? 
+                { id: j.jobId, 
+                  title: j.title, 
+                  salary: j.salary, 
+                  equity: j.equity, 
+                  company_handle: j.companyHandle
+                } : null)
+                .filter(j => j) : []
+          });
+      }
+      return arr;
+    }, []);
+
+    return users;
   }
 
   /** Given a username, return data about user.
@@ -125,19 +157,48 @@ class User {
 
   static async get(username) {
     const userRes = await db.query(
-          `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           WHERE username = $1`,
+          `SELECT 
+              u.username, 
+              u.first_name AS "firstName", 
+              u.last_name AS "lastName", 
+              u.email, 
+              u.is_admin AS "isAdmin", 
+              j.id AS "jobId",
+              j.title,
+              j.salary,
+              j.equity,
+              j.company_handle AS "companyHandle"
+            FROM users u 
+            LEFT JOIN applications a
+            ON a.username = u.username
+            LEFT JOIN jobs j 
+            ON j.id = a.job_id
+            WHERE u.username = $1`,
         [username],
     );
 
-    const user = userRes.rows[0];
+    if (!userRes.rows[0]) throw new NotFoundError(`No user: ${username}`);
 
-    if (!user) throw new NotFoundError(`No user: ${username}`);
+    const user = userRes.rows.reduce((obj,user,i) => {
+      if (i === userRes.rows.length-1)
+        return ({
+          ...obj,
+          username: user.username,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          email: user.email,
+          is_admin: user.isAdmin,
+          jobs: userRes.rows.map(j => j.jobId ? 
+            ({ 
+              id: j.id, 
+              title: j.title, 
+              salary: j.salary, 
+              equity: j.equity,
+              company_handle: j.companyHandle
+            }) : null)
+            .filter(j => j)
+        });
+    }, '');
 
     return user;
   }
@@ -203,6 +264,28 @@ class User {
     const user = result.rows[0];
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
+  }
+
+  /** COMMENTS
+   *
+   *
+   * 
+   **/
+
+  static async apply({ username, id }) {
+    if (isNaN(id)) throw new NotFoundError(`No job: ${id}`);
+    const result = await db.query(
+          `INSERT INTO applications 
+              (username, job_id)
+            VALUES ($1, $2)
+            RETURNING username, job_id AS "id"`,
+          [ username, id ]);
+
+    const user = result.rows[0];
+
+    if (!user) throw new NotFoundError(`No user: ${username}`);
+
+    return user;
   }
 }
 

@@ -5,8 +5,12 @@
 const jsonschema = require("jsonschema");
 
 const express = require("express");
-const { ensureIsAuthorized, ensureIsAdmin } = require("../middleware/auth");
-const { BadRequestError } = require("../expressError");
+const { 
+  ensureLoggedIn, 
+  ensureCorrectUser, 
+  ensureIsAuthorized, 
+  ensureIsAdmin } = require("../middleware/auth");
+const { BadRequestError, NotFoundError } = require("../expressError");
 const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
 const userNewSchema = require("../schemas/userNew.json");
@@ -113,6 +117,28 @@ router.delete("/:username", ensureIsAuthorized, async function (req, res, next) 
     await User.remove(req.params.username);
     return res.json({ deleted: req.params.username });
   } catch (err) {
+    return next(err);
+  }
+});
+
+/** POST /[username]/jobs/[id]  => { applied: id }
+ *
+ *
+ * Authorization required: user w/ username
+ **/
+
+router.post("/:username/jobs/:id", ensureLoggedIn, ensureCorrectUser, 
+  async function (req, res, next) {
+  try {
+    const {username, id} = req.params;
+    const user = await User.apply({username, id});
+    
+    return res.json({ applied: id });
+  } catch (err) {
+    if(err.code === '23505' && String(err.detail).includes('already exists'))
+      return next(new BadRequestError('Duplicate application'));
+    if(err.code === '23503' && String(err.detail).includes('is not present in table "jobs"'))
+      return next(new NotFoundError(`No job with that id`));
     return next(err);
   }
 });

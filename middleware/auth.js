@@ -72,10 +72,25 @@ function ensureIsAdmin(req, res, next) {
   }
 }
 
+  /** Middleware: Requires correct username.
+ *
+ * 
+ **/
+
+function ensureCorrectUser(req, res, next) {
+  try {
+    if (res.locals.user.username !== req.params.username) throw new UnauthorizedError();
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+}
+
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
   ensureIsAuthorized,
-  ensureIsAdmin
+  ensureIsAdmin,
+  ensureCorrectUser
 };
