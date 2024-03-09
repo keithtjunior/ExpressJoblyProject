@@ -190,7 +190,7 @@ class User {
           is_admin: user.isAdmin,
           jobs: userRes.rows.map(j => j.jobId ? 
             ({ 
-              id: j.id, 
+              id: j.jobId, 
               title: j.title, 
               salary: j.salary, 
               equity: j.equity,
