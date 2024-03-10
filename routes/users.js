@@ -122,13 +122,17 @@ router.delete("/:username", ensureLoggedIn, ensureIsAuthorized, async function (
   }
 });
 
-/** POST /[username]/jobs/[id]  => { applied: id }
- *
- *
- * Authorization required: user w/ username
+/** POST /[username]/jobs/[id]  => { username, id }
+ * 
+ *  Allows a user, or admin on behalf of a user, to apply for a job
+ *  a user-id / job-id relationship is created on the applications db.
+ * 
+ *  Returns { applied: id }
+ *  
+ *  Authorization required: admin or user w/ username
  **/
 
-router.post("/:username/jobs/:id", ensureLoggedIn, ensureCorrectUser, 
+router.post("/:username/jobs/:id", ensureLoggedIn, ensureIsAuthorized,  
   async function (req, res, next) {
   try {
     const {username, id} = req.params;
@@ -136,10 +140,14 @@ router.post("/:username/jobs/:id", ensureLoggedIn, ensureCorrectUser,
     
     return res.json({ applied: id });
   } catch (err) {
-    if(err.code === '23505' && String(err.detail).includes('already exists'))
-      return next(new BadRequestError('Duplicate application'));
+    console.log(err)
+    if(err.code === '23503' && String(err.detail).includes('is not present in table "users"'))
+      return next(new BadRequestError('No user with that username'));
     if(err.code === '23503' && String(err.detail).includes('is not present in table "jobs"'))
       return next(new NotFoundError(`No job with that id`));
+    if(err.code === '23505' && String(err.detail).includes('already exists'))
+      return next(new BadRequestError('Duplicate application'));
+
     return next(err);
   }
 });

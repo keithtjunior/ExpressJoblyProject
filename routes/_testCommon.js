@@ -80,15 +80,7 @@ async function commonBeforeAll() {
     equity: 0.00,
     company_handle: "c1"
   });
-
-  // await User.apply({
-  //   username: "u1",
-  //   id: "j1"
-  // });
-  // await User.apply({
-  //   username: "u1",
-  //   id: "j2"
-  // });
+  
 }
 
 async function commonBeforeEach() {

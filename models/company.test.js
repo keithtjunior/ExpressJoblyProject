@@ -85,6 +85,53 @@ describe("findAll", function () {
       },
     ]);
   });
+
+  const f1 = { name: "C1" };
+  const f2 = { minEmployees: 0, maxEmployees: 2 };
+  const f3 = { minEmployees: 1, maxEmployees: 0 };
+
+  test("works: filter by name", async function () {
+    let companies = await Company.findAll(f1);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      }
+    ]);
+  });
+
+  test("works: filter by min & max users", async function () {
+    let companies = await Company.findAll(f2);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      }
+    ]);
+  });
+
+  test("bad filter properties: min & max", async function () {
+    try {
+      await Company.findAll(f3);
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+
 });
 
 /************************************** get */
@@ -98,7 +145,14 @@ describe("get", function () {
       description: "Desc1",
       numEmployees: 1,
       logoUrl: "http://c1.img",
-      jobs: []
+      jobs: [
+        {
+          id: expect.any(Number),
+          title: "j1",
+          salary: 0,
+          equity: "0.0"
+        }
+      ]
     });
   });
 

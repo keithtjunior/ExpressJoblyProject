@@ -301,3 +301,57 @@ describe("DELETE /users/:username", function () {
     expect(resp.statusCode).toEqual(404);
   });
 });
+
+/************************************** POST /users/:username/jobs/:id */
+
+describe("POST /users/:username/jobs/:id", () => {
+  test("works for users", async function () {
+    const userRes = await db.query(
+      `SELECT * FROM users WHERE username = 'u1'`);
+    const username = userRes.rows[0].username;
+    const jobRes = await db.query(
+      `SELECT * FROM jobs`);
+    const id = jobRes.rows[0].id;
+
+    const resp = await request(app)
+      .post(`/users/${username}/jobs/${id}`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({ applied: `${id}` });
+  });
+
+  test("unauth for anon", async function () {
+    const userRes = await db.query(
+      `SELECT * FROM users WHERE username = 'u1'`);
+    const username = userRes.rows[0].username;
+    const jobRes = await db.query(
+      `SELECT * FROM jobs`);
+    const id = jobRes.rows[0].id;
+
+    const resp = await request(app)
+        .post(`/users/${username}/jobs/${id}`)
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("not found if no such user", async function () {
+    const jobRes = await db.query(
+      `SELECT * FROM jobs`);
+    const id = jobRes.rows[0].id;
+
+    const resp = await request(app)
+      .post(`/users/none/jobs/${id}`)
+      .set("authorization", `Bearer ${a1Token}`);
+    expect(resp.statusCode).toEqual(400);
+  });
+
+  test("not found if no such job", async function () {
+    const userRes = await db.query(
+      `SELECT * FROM users WHERE username = 'u1'`);
+    const username = userRes.rows[0].username;
+
+    const resp = await request(app)
+      .post(`/users/${username}/jobs/0`)
+      .set("authorization", `Bearer ${a1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+
+});

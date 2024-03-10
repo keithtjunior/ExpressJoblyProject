@@ -67,7 +67,7 @@ describe("POST /companies", function () {
 /************************************** GET /companies */
 
 describe("GET /companies", function () {
-  test("ok for anon", async function () {
+  test("ok for anon: no filters", async function () {
     const resp = await request(app).get("/companies");
     expect(resp.body).toEqual({
       companies:
@@ -97,6 +97,55 @@ describe("GET /companies", function () {
     });
   });
 
+  const f1 = { filters: { name: "C1" } };
+  const f2 = { filters: { minEmployees: 0, maxEmployees: 2 } };
+  const f3 = { filters: { minEmployees: 1, maxEmployees: 0 } };
+
+  test("ok for anon: name filter", async function () {
+    const resp = await request(app).get("/companies")
+      .send(f1);
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              description: "Desc1",
+              numEmployees: 1,
+              logoUrl: "http://c1.img",
+            }
+          ],
+    });
+  });
+  test("ok for anon: min & max employees filters", async function () {
+    const resp = await request(app).get("/companies")
+      .send(f2);
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              description: "Desc1",
+              numEmployees: 1,
+              logoUrl: "http://c1.img",
+            },
+            {
+              handle: "c2",
+              name: "C2",
+              description: "Desc2",
+              numEmployees: 2,
+              logoUrl: "http://c2.img",
+            }
+          ],
+    });
+  });
+  test("fails: incorrect min & max filters", async function () {
+    const resp = await request(app).get("/companies")
+      .send(f3);
+    expect(resp.statusCode).toEqual(400);
+  });
+
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
     // thus making it hard to test that the error-handler works with it. This
@@ -123,10 +172,10 @@ describe("GET /companies/:handle", function () {
         logoUrl: "http://c1.img",
         jobs: [
           {
+            id: expect.any(Number),
+            title: "j1",
             equity: "0",
-            id: 8,
-            salary: 0,
-            title: "j2"
+            salary: 0
           },
         ]
       },
@@ -163,7 +212,6 @@ describe("PATCH /companies/:handle", function () {
           name: "C1-new",
         })
         .set("authorization", `Bearer ${a1Token}`);
-    console.log("resp.body: ", resp.body)
     expect(resp.body).toEqual({
       company: {
         handle: "c1",

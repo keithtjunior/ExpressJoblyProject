@@ -188,7 +188,7 @@ class Company {
     return keys.reduce((obj, val, idx) => {
       return obj += `${idx===0 ? '\nWHERE' : '\nAND'} ${val==='name' ? 
       `lower(name) LIKE lower('%' || '${values[idx]}' || '%')` : 
-      `num_employees ${val==='minEmployees' ? `>=` : `<`} ${values[idx]}`}`
+      `num_employees ${val==='minEmployees' ? `>=` : `<=`} ${values[idx]}`}`
     }, '');
   }
   

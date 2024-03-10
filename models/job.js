@@ -20,7 +20,7 @@ class Job {
           `INSERT INTO jobs
            (title, salary, equity, company_handle)
            VALUES ($1, $2, $3, $4)
-           RETURNING id, title, salary, equity, company_handle AS "companyHandle"`,
+           RETURNING id, title, salary, equity, company_handle`,
         [
           title,
           salary,
@@ -40,14 +40,7 @@ class Job {
 
   static async findAll(filters=null) {
     const query = this.#filterAll(filters);
-    const sql = `SELECT id,
-                    title, 
-                    salary, 
-                    equity, 
-                    company_handle AS "companyHandle"
-                FROM jobs ${query ? query : ''}
-                ORDER BY title`;
-    const jobsRes = await db.query(
+    const results = await db.query(
           `SELECT id,
                   title, 
                   salary, 
@@ -55,7 +48,7 @@ class Job {
                   company_handle AS "companyHandle"
            FROM jobs ${query ? query : ''}
            ORDER BY title`);
-    return jobsRes.rows;
+    return results.rows;
   }
 
   /** Given a job id, return data about job.
