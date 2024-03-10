@@ -121,6 +121,14 @@ describe("GET /companies/:handle", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
+        jobs: [
+          {
+            equity: "0",
+            id: 8,
+            salary: 0,
+            title: "j2"
+          },
+        ]
       },
     });
   });
@@ -155,6 +163,7 @@ describe("PATCH /companies/:handle", function () {
           name: "C1-new",
         })
         .set("authorization", `Bearer ${a1Token}`);
+    console.log("resp.body: ", resp.body)
     expect(resp.body).toEqual({
       company: {
         handle: "c1",
