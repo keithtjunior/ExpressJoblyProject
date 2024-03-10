@@ -17,6 +17,7 @@ const { UnauthorizedError } = require("../expressError");
 
 function authenticateJWT(req, res, next) {
   try {
+    debugger;
     const authHeader = req.headers && req.headers.authorization;
     if (authHeader) {
       const token = authHeader.replace(/^[Bb]earer /, "").trim();
@@ -42,9 +43,10 @@ function ensureLoggedIn(req, res, next) {
   }
 }
 
-  /** COMMENTS.
- *
+  /** Middleware to use when they must be an admin or
+ *    have the correct username.
  * 
+ *    If not, raises Unauthorized.
  **/
 
 function ensureIsAuthorized(req, res, next) {
@@ -58,9 +60,9 @@ function ensureIsAuthorized(req, res, next) {
   }
 }
 
-  /** COMMENTS.
+  /** Middleware to use when they must be an admin.
  *
- * 
+ *    If not, raises Unauthorized.
  **/
 
 function ensureIsAdmin(req, res, next) {
@@ -72,9 +74,10 @@ function ensureIsAdmin(req, res, next) {
   }
 }
 
-  /** Middleware: Requires correct username.
- *
+  /** Middleware to use when they must have the correct
+ *    username
  * 
+ *    If not, raises Unauthorized.
  **/
 
 function ensureCorrectUser(req, res, next) {

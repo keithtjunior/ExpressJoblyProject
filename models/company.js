@@ -104,7 +104,7 @@ class Company {
         });
     }, '');
 
-    return { company };
+    return company;
   }
 
   /** Update company data with `data`.
@@ -161,10 +161,21 @@ class Company {
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
 
-    /** COMMENTS.
-   *
-   * 
-   **/
+  /** Builds the partial 'where' clauses of the sql statement to filter 
+  *  all company results based on optional filtering criteria
+  * 
+  *  Filters can include:
+  *   - name 
+  *   - minEmployees
+  *   - maxEmployees
+  * 
+  *   Returns sql statement as text if filter options are included;
+  *   Returns undefined if filters are not included
+  * 
+  *   Throws BadRequestError if minEmployees parameter is greater 
+  *   than the maxEmployees parameter
+  * 
+  **/
 
   static #filterAll(filters) {
     if (!filters) return;

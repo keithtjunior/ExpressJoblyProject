@@ -7,8 +7,11 @@ const { sqlForPartialUpdate } = require("../helpers/sql");
 /** Related functions for jobs. */
 
 class Job {
-  /** COMMENTS
-   * 
+  /** Create a job (from data), update db, return new job data.
+   *
+   * data should be { title, salary, equity, company_handle }
+   *
+   * Returns { id, title, salary, equity, companyHandle }
    *
    * */
 
@@ -131,10 +134,18 @@ class Job {
     if (!job) throw new NotFoundError(`No job: ${id}`);
   }
 
-    /** COMMENTS.
-   *
-   * 
-   **/
+/** Builds the partial 'where' clauses of the sql statement to filter 
+  *  all job results based on optional filtering criteria
+  * 
+  *  Filters can include:
+  *   - title 
+  *   - minSalary
+  *   - hasEquity
+  * 
+  *   Returns sql statement as text if filter options are included;
+  *   Returns undefined if filters are not included
+  * 
+  **/
 
   static #filterAll(filters) {
     if (!filters) return;

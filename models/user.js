@@ -126,17 +126,17 @@ class User {
       if (!arr.find((u) => u.username === user.username)) {
           arr.push({
             username: user.username,
-            first_name: user.firstName,
-            last_name: user.lastName,
+            firstName: user.firstName,
+            lastName: user.lastName,
             email: user.email,
-            is_admin: user.isAdmin,
+            isAdmin: user.isAdmin,
             jobs: user.jobId ? 
               result.rows.map(j => j.username === user.username ? 
                 { id: j.jobId, 
                   title: j.title, 
                   salary: j.salary, 
                   equity: j.equity, 
-                  company_handle: j.companyHandle
+                  companyHandle: j.companyHandle
                 } : null)
                 .filter(j => j) : []
           });
@@ -184,17 +184,17 @@ class User {
         return ({
           ...obj,
           username: user.username,
-          first_name: user.firstName,
-          last_name: user.lastName,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
-          is_admin: user.isAdmin,
+          isAdmin: user.isAdmin,
           jobs: userRes.rows.map(j => j.jobId ? 
             ({ 
               id: j.jobId, 
               title: j.title, 
               salary: j.salary, 
               equity: j.equity,
-              company_handle: j.companyHandle
+              companyHandle: j.companyHandle
             }) : null)
             .filter(j => j)
         });
@@ -266,11 +266,16 @@ class User {
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
 
-  /** COMMENTS
+  /** User applys to job based on job-id and username; 
+   *  update db, return username and job-id.
    *
+   * data should be { username, id }
    *
+   * Returns { username, id }
    * 
-   **/
+   * Throws NotFoundError id is not a number or if user not found.
+   *
+   * */
 
   static async apply({ username, id }) {
     if (isNaN(id)) throw new NotFoundError(`No job: ${id}`);
